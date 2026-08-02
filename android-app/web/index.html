@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FBFBF9">
+<title>有数</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="app">
+    <div class="screen">
+      <!-- 物品列表 -->
+      <div class="scr active" id="scr-list">
+        <div class="navbar">有数<span class="view-toggle" id="densityToggle" onclick="toggleDensity()" style="right:50px"></span><span class="view-toggle" id="viewToggle" onclick="toggleView()"></span></div>
+        <div class="content">
+          <div class="search"><span class="search-ic">🔍</span><input id="q" placeholder="搜索物品 / 品牌" oninput="renderList()"></div>
+          <div class="toolbar">
+            <div class="filterbar" onclick="openFilterSheet()">
+              <svg class="fb-ic" viewBox="0 0 24 24"><path d="M4 5h16M7 12h10M10 19h4"/></svg>
+              <span class="fb-cur" id="fbCur">全部</span>
+              <svg class="fb-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="sortbar" id="sortBtn" onclick="openSortSheet()">
+              <svg class="fb-ic" viewBox="0 0 24 24"><path d="M7 4v16m0 0l-3-3m3 3l3-3M17 20V4m0 0l-3 3m3-3l3 3"/></svg>
+              <span class="sb-cur" id="sbCur">排序</span>
+            </div>
+          </div>
+          <div id="catChips" style="display:none"></div>
+          <div id="listWrap"></div>
+        </div>
+      </div>
+      <!-- 详情 -->
+      <div class="scr" id="scr-detail">
+        <div class="navbar"><span class="back" onclick="backFromDetail()">‹</span><span id="detTitle">详情</span></div>
+        <div class="content" id="detWrap"></div>
+      </div>
+      <!-- 添加 -->
+      <div class="scr" id="scr-entry">
+        <div class="navbar"><span class="back" onclick="showScreen('scr-list')">‹</span>添加物品</div>
+        <div class="content entry-content">
+          <!-- 顶部实时预览卡（随填写更新） -->
+          <div class="entry-preview" id="e-preview">
+            <div class="ep-name">物品名称</div>
+            <div class="ep-big">¥0.00</div>
+            <div class="ep-sub">填写价格与日期后，自动预估日均使用价格</div>
+            <div class="ep-bar"><i></i></div>
+            <div class="ep-loss"><span>损耗率 —</span><span>预计 — 年</span></div>
+          </div>
+          <!-- 基础信息分组 -->
+          <div class="group">
+            <div class="group-hd">基础信息</div>
+            <div class="group-bd">
+              <div class="ufield"><span class="ulabel">名称<em>*</em></span><input id="e-name" placeholder="如 iPhone 15 Pro" oninput="updatePreview()"></div>
+              <div class="ufield"><span class="ulabel">价格<em>*</em></span><span class="uunit">¥</span><input id="e-price" type="number" placeholder="0.00" oninput="updatePreview()"></div>
+              <div class="ufield"><span class="ulabel">购买日期<em>*</em></span><input id="e-date" type="date" oninput="updatePreview()"></div>
+              <div class="ufield"><span class="ulabel">品牌</span><input id="e-brand" placeholder="选填，如 Apple"></div>
+            </div>
+          </div>
+          <!-- 分类分组 -->
+          <div class="group">
+            <div class="group-hd">分类</div>
+            <div class="group-bd">
+              <div id="e-cat-common" class="cat-common"></div>
+              <div class="cat-more" id="e-cat-more" onclick="openCatSheet()"></div>
+            </div>
+          </div>
+          <!-- 年限分组 -->
+          <div class="group">
+            <div class="group-hd">预计使用年限 <em>*</em><span class="group-tip">用于计算损耗率，可修改</span></div>
+            <div class="group-bd">
+              <div class="life-chips" id="e-life">
+                <span data-y="0.5">半年</span><span data-y="1" class="on">1 年</span><span data-y="2">2 年</span><span data-y="3">3 年</span>
+                <label class="life-custom">
+                  <input id="e-life-custom" type="number" placeholder="自定义" oninput="customLife()" min="0" step="0.5">
+                  <span class="lc-unit">年</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div style="height:70px"></div>
+        </div>
+        <div class="entry-save"><button class="btn-primary" onclick="saveEntry()">保存</button></div>
+      </div>
+      <!-- 统计 -->
+      <div class="scr" id="scr-stats"><div class="navbar">有数</div><div class="content" id="statsWrap"></div></div>
+      <!-- 归档 -->
+      <div class="scr" id="scr-archive"><div class="navbar"><span class="back" onclick="showScreen('scr-mine')">‹</span>归档物品</div><div class="content" id="archiveWrap"></div></div>
+      <!-- 分类管理 -->
+      <div class="scr" id="scr-cat"><div class="navbar"><span class="back" onclick="backFromCatMgmt()">‹</span>分类管理<span class="nav-r" onclick="openGrpSheet()">管理分组</span></div><div class="content" id="catMgmtWrap"></div></div>
+      <!-- 我的 -->
+      <div class="scr" id="scr-mine"><div class="navbar">有数</div><div class="content" id="mineWrap"></div></div>
+    </div>
+
+    <div class="fab" id="fab" onclick="openEntry()">＋</div>
+
+    <div class="tabbar">
+      <div class="tab active" id="tab-list" onclick="showScreen('scr-list')">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>物品</div>
+      <div class="tab" id="tab-stats" onclick="showScreen('scr-stats')">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="4" width="4" height="17" rx="1"/></svg>统计</div>
+      <div class="tab" id="tab-mine" onclick="showScreen('scr-mine')">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>我的</div>
+    </div>
+
+    <!-- 分类筛选抽屉 -->
+    <div class="sheet-mask" id="sheetMask" onclick="closeFilterSheet()"></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-hd"><span>分类筛选</span><span class="sheet-x" onclick="closeFilterSheet()">完成</span></div>
+      <div class="sheet-body" id="sheetGrid"></div>
+    </div>
+    <!-- 录入分类抽屉 -->
+    <div class="sheet-mask" id="catMask" onclick="closeCatSheet()"></div>
+    <div class="sheet" id="catSheet">
+      <div class="sheet-hd"><span>更多分类</span><span class="sheet-x" onclick="closeCatSheet()">完成</span></div>
+      <div class="sheet-body" id="catSheetGrid"></div>
+    </div>
+    <!-- 排序抽屉 -->
+    <div class="sheet-mask" id="sortMask" onclick="closeSortSheet()"></div>
+    <div class="sheet" id="sortSheet">
+      <div class="sheet-hd"><span>排序</span><span class="sheet-x" onclick="closeSortSheet()">完成</span></div>
+      <div class="sort-list" id="sortList"></div>
+      <div class="sort-hint">再次点击当前维度可切换正序 / 逆序</div>
+    </div>
+    <!-- 删除二次确认 -->
+    <div class="modal-mask" id="delMask" onclick="closeDelModal()"></div>
+    <div class="modal" id="delModal">
+      <div class="modal-title">彻底删除</div>
+      <div class="modal-text">删除后数据将<b>永久不可恢复</b>，确定要删除这件物品吗？</div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeDelModal()">取消</button>
+        <button class="btn-danger" onclick="confirmDel()">确认删除</button>
+      </div>
+    </div>
+    <!-- 导入覆盖清单确认 -->
+    <div class="modal-mask" id="impMask" onclick="closeImportModal()"></div>
+    <div class="modal" id="impModal" style="width:320px;text-align:left;">
+      <div class="modal-title" style="text-align:center">导入数据</div>
+      <div class="modal-text" id="impText" style="text-align:left"></div>
+      <div id="impList"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeImportModal()">取消</button>
+        <button class="btn-danger" onclick="confirmImport()">确认导入</button>
+      </div>
+    </div>
+
+    <!-- 导入文件选择（浏览器回退用；真机可用系统文件选择器） -->
+    <input id="fileInput" type="file" accept="application/json,.json" style="display:none" onchange="onFileChosen(event)">
+
+    <!-- 归档确认弹窗 -->
+    <div class="modal-mask" id="archMask" onclick="closeArchModal()"></div>
+    <div class="modal" id="archModal">
+      <div class="modal-title">归档物品</div>
+      <div class="modal-text" style="text-align:left">归档后该物品将移至归档区，不再计入统计。可随时恢复。</div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeArchModal()">取消</button>
+        <button class="btn-primary" onclick="confirmArchive()">确认归档</button>
+      </div>
+    </div>
+
+    <!-- 恢复确认弹窗 -->
+    <div class="modal-mask" id="restoreMask" onclick="closeRestoreModal()"></div>
+    <div class="modal" id="restoreModal">
+      <div class="modal-title">恢复物品</div>
+      <div class="modal-text" style="text-align:left">恢复后该物品将重新计入统计，日均价格与损耗率恢复正常计算。</div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeRestoreModal()">取消</button>
+        <button class="btn-primary" onclick="confirmRestore()">确认恢复</button>
+      </div>
+    </div>
+
+    <!-- 保存成功弹窗 -->
+    <div class="modal-mask" id="savedMask" onclick="closeSavedModal()"></div>
+    <div class="modal" id="savedModal">
+      <div class="saved-ok">✓</div>
+      <div class="modal-title">保存成功</div>
+      <div class="saved-info" id="savedInfo"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeSavedModal();showScreen('scr-list')">返回列表</button>
+        <button class="btn-primary" id="savedViewBtn">查看详情</button>
+      </div>
+    </div>
+
+    <!-- 关于弹窗 -->
+    <div class="modal-mask" id="aboutMask" onclick="closeAboutModal()"></div>
+    <div class="modal" id="aboutModal" style="width:300px;">
+      <div class="about-logo">有数</div>
+      <div class="about-slogan">你的物品，心里有数。</div>
+      <div class="about-ver">版本 <span id="aboutVer">1.0.0</span></div>
+      <div class="about-note">数据保存在本机，可随时导出备份。</div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeAboutModal()">知道了</button>
+      </div>
+    </div>
+
+    <!-- 导入文件选择弹窗（真机：列出 Documents 目录下的 youshu-*.json） -->
+    <div class="modal-mask" id="pickMask" onclick="closePickModal()"></div>
+    <div class="modal" id="pickModal" style="width:320px;text-align:left;">
+      <div class="modal-title" style="text-align:center">选择导入文件</div>
+      <div id="pickList" class="pick-list"></div>
+      <div class="modal-actions" style="flex-direction:column;gap:8px;">
+        <button class="btn-primary" onclick="closePickModal();importItemsPickFile()">选择其它文件…</button>
+        <button class="btn-ghost" onclick="closePickModal()">取消</button>
+      </div>
+    </div>
+
+    <!-- 长按操作面板（详情 / 归档(恢复) / 删除） -->
+    <div class="modal-mask" id="actMask" onclick="closeActSheet()"></div>
+    <div class="act-sheet" id="actSheet">
+      <div id="actItems"></div>
+      <div class="act-cancel" onclick="closeActSheet()">取消</div>
+    </div>
+
+    <!-- 分组管理抽屉 -->
+    <div class="sheet-mask" id="grpMask" onclick="closeGrpSheet()"></div>
+    <div class="sheet" id="grpSheet">
+      <div class="sheet-hd"><span>管理分组</span><span class="sheet-x" onclick="closeGrpSheet()">完成</span></div>
+      <div class="sheet-body" id="grpList"></div>
+      <div style="padding:0 16px 22px;">
+        <div class="cm-add" onclick="addGrp()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新增分组</div>
+        <div class="cm-hint" style="margin-top:12px;">「常用」「生活」「其它」为内置分组，不可删除<br>点分组名可重命名，上下箭头调整顺序</div>
+      </div>
+    </div>
+
+    <!-- 新增/编辑分类抽屉 -->
+    <div class="sheet-mask" id="catEditMask" onclick="closeCatEdit()"></div>
+    <div class="edit-sheet" id="catEditSheet">
+      <div class="es-hd">
+        <span class="es-title" id="catEditTitle">新增分类</span>
+        <span class="es-del" id="catEditDel" onclick="delCatFromEdit()">删除</span>
+      </div>
+      <div class="es-body">
+        <div class="es-preview" id="catEditPreview"></div>
+        <div class="es-field">
+          <div class="es-label">分类名称</div>
+          <input class="es-name-in" id="e-cat-name" placeholder="如 摄影器材" oninput="renderCatEditPreview()">
+        </div>
+        <div class="es-field">
+          <div class="es-label">归属分组</div>
+          <div class="grp-pick" id="grpPick"></div>
+        </div>
+        <div class="es-field">
+          <div class="icon-sec-hd">
+            <span class="ish-label">选择图标</span>
+            <div class="ish-tabs" id="iconTabs"></div>
+          </div>
+          <div class="icon-grid" id="iconGrid"></div>
+        </div>
+      </div>
+      <div class="es-actions">
+        <button class="btn-primary" onclick="saveCatEdit()">保存</button>
+      </div>
+    </div>
+    <input id="catIconFile" type="file" accept="image/*" style="display:none" onchange="onCatIconChosen(event)">
+
+    <!-- 上传图标预览确认弹窗 -->
+    <div class="modal-mask" id="iconPreviewMask" onclick="closeIconPreview()"></div>
+    <div class="modal" id="iconPreviewModal">
+      <div class="modal-title">预览图标</div>
+      <div class="modal-text" style="text-align:center;">这是裁切后的图标效果，确认使用吗？</div>
+      <div class="preview-box" id="iconPreviewBox"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="document.getElementById('catIconFile').click()">重新选择</button>
+        <button class="btn-primary" id="iconPreviewUse" style="flex:1;">使用此图标</button>
+      </div>
+    </div>
+
+    <!-- 删除分类 → 迁移弹窗 -->
+    <div class="modal-mask" id="migMask" onclick="closeMigModal()"></div>
+    <div class="modal" id="migModal">
+      <div class="modal-title">删除分类</div>
+      <div class="modal-text">将删除分类「<b id="migCatName"></b>」，其下 <b id="migCatCount"></b> 件物品需迁移到其它分类。</div>
+      <select class="mig-select" id="migSelect"></select>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeMigModal()">取消</button>
+        <button class="btn-danger" onclick="confirmMigCat()">删除并迁移</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="core.js"></script>
+  <script src="iconlib.js"></script>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

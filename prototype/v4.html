@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有数 v4 · 极简墨</title>
+<style>
+  :root{
+    --accent:#111111; --bg:#FBFBF9; --card:#FFFFFF; --text:#1A1A1A; --sub:#9A9A93;
+    --line:#ECEAE4; --chip-bg:#FFFFFF; --chip-line:#E2E0D8; --sel-text:#fff; --phone-bg:#FBFBF9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#EFEFEA;display:flex;flex-direction:column;align-items:center;padding:18px 0 28px;color:var(--text);}
+  .caption{font-size:12px;color:#9A9A93;margin-bottom:12px;letter-spacing:.5px;}
+  .phone{width:390px;height:844px;background:var(--phone-bg);border-radius:46px;box-shadow:0 24px 70px rgba(0,0,0,.22);display:flex;flex-direction:column;overflow:hidden;position:relative;border:11px solid #0c0c0c;}
+  .statusbar{height:46px;background:var(--phone-bg);display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;flex:0 0 auto;color:var(--text);}
+  .statusbar .right{display:flex;gap:6px;align-items:center;font-size:12px;}
+  .screen{flex:1;overflow:hidden;position:relative;background:var(--phone-bg);}
+  .scr{display:none;height:100%;flex-direction:column;}
+  .scr.active{display:flex;}
+  .navbar{height:50px;display:flex;align-items:center;justify-content:center;position:sticky;top:0;background:var(--phone-bg);font-size:17px;font-weight:600;border-bottom:1px solid var(--line);flex:0 0 auto;z-index:6;letter-spacing:1px;}
+  .navbar .back{position:absolute;left:14px;font-size:24px;color:var(--accent);cursor:pointer;line-height:1;font-weight:400;}
+  .view-toggle{position:absolute;right:14px;font-size:20px;color:var(--accent);cursor:pointer;line-height:1;}
+  .content{flex:1;overflow-y:auto;padding:14px;}
+  .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #F0EEE8;}
+  /* list */
+  .search{background:var(--card);border-radius:12px;padding:9px 14px;color:var(--sub);font-size:14px;margin-bottom:12px;border:1px solid #F0EEE8;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:10px;margin-bottom:2px;}
+  .chip{flex:0 0 auto;background:var(--chip-bg);border:1px solid var(--chip-line);border-radius:16px;padding:6px 14px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap;}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--sel-text);font-weight:600;}
+  .item{display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .ava{width:46px;height:46px;border-radius:13px;background:#F2F1ED;display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto;}
+  .item-main{flex:1;min-width:0;}
+  .item-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.3px;}
+  .item-sub{font-size:12px;color:var(--sub);margin:2px 0 7px;}
+  .mini-prog{height:5px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .mini-prog>i{display:block;height:100%;border-radius:3px;}
+  .item-loss{font-size:11px;margin-top:4px;font-weight:600;}
+  .item-right{flex:0 0 auto;text-align:right;}
+  .daily{font-size:17px;font-weight:700;color:var(--accent);}
+  .daily-sub{font-size:11px;color:var(--sub);}
+  .held{font-size:11px;color:#b3b0a6;margin-top:4px;}
+  .fab{position:absolute;right:18px;bottom:74px;width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;font-size:30px;display:none;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.30);cursor:pointer;z-index:20;line-height:1;}
+  /* grid view · 行高按"可用高度"精确反推：
+     列表区≈534px → 宽松 3 行 = (534-2*gap)/3 ≈ 170px；紧凑 5 行 = (534-4*pad)/5 ≈ 100px */
+  #listWrap.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;grid-auto-rows:170px;}
+  #listWrap.grid .card.item{flex-direction:column;text-align:center;align-items:stretch;padding:12px 8px;justify-content:center;overflow:hidden;}
+  #listWrap.grid .ava{width:42px;height:42px;font-size:24px;margin:0 auto 8px;border-radius:12px;}
+  #listWrap.grid .item-main{text-align:center;}
+  #listWrap.grid .item-name{font-size:14px;}
+  #listWrap.grid .item-sub{font-size:11px;margin:3px 0 7px;}
+  #listWrap.grid .item-right{text-align:center;margin-top:7px;}
+  #listWrap.grid .daily{font-size:16px;}
+  #listWrap.grid .daily-sub{font-size:10px;}
+  #listWrap.grid .held{font-size:10px;margin-top:4px;}
+  #listWrap.grid .mini-prog{margin:0 auto;max-width:88%;height:5px;}
+  /* detail */
+  .hero{text-align:center;padding:22px 14px;}
+  .hero .big{font-size:44px;font-weight:800;color:var(--accent);letter-spacing:-1.5px;}
+  .hero .sub{font-size:13px;color:var(--sub);margin-top:6px;letter-spacing:.5px;}
+  .loss-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:9px;}
+  .loss-head b{font-size:16px;}
+  .loss-bar{height:11px;background:var(--line);border-radius:6px;overflow:hidden;}
+  .loss-bar>i{display:block;height:100%;}
+  .loss-foot{font-size:12px;color:var(--sub);margin-top:9px;}
+  .row{display:flex;justify-content:space-between;padding:11px 2px;border-bottom:1px solid #F0EEE8;font-size:14px;}
+  .row:last-child{border-bottom:none;}
+  .row span{color:var(--sub);}
+  .row b{font-weight:600;}
+  .actions{display:flex;gap:10px;margin-top:4px;}
+  .btn-primary{flex:1;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;}
+  .btn-ghost{flex:1;background:#fff;color:var(--accent);border:1px solid #CFCDC4;border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;}
+  .btn-danger{flex:1;background:#EF4B4B;color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;}
+  /* entry */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:#7a7a72;margin-bottom:7px;letter-spacing:.3px;}
+  .field input,.field select{width:100%;border:1px solid var(--chip-line);border-radius:11px;padding:12px 13px;font-size:15px;background:#fff;color:var(--text);outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--accent);}
+  .price-in{display:flex;align-items:center;border:1px solid var(--chip-line);border-radius:11px;background:#fff;padding-left:13px;}
+  .price-in span{font-size:16px;color:var(--sub);}
+  .price-in input{border:none;flex:1;}
+  .preview{background:#F2F1ED;border:1px solid #E2E0D8;border-radius:11px;padding:11px 13px;font-size:13px;color:#555;margin:2px 0 16px;}
+  .life-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .life-chips span{flex:0 0 auto;background:#fff;border:1px solid var(--chip-line);border-radius:14px;padding:8px 15px;font-size:13px;color:#7a7a72;cursor:pointer;}
+  .life-chips span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+  /* stats */
+  .sum-grid{display:flex;gap:12px;margin-bottom:12px;}
+  .sum{flex:1;background:var(--card);border-radius:15px;padding:14px;border:1px solid #F0EEE8;}
+  .sum .t{font-size:12px;color:var(--sub);}
+  .sum .v{font-size:22px;font-weight:800;color:var(--accent);margin-top:6px;}
+  .sec-title{font-size:14px;font-weight:700;margin:6px 2px 12px;letter-spacing:.5px;}
+  /* 分类分布：横向条状图（按总价倒序，风格同损耗排行） */
+  .catbar{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+  .catbar:last-child{margin-bottom:0;}
+  .catbar .nm{width:80px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto;color:#5a5a52;display:flex;align-items:center;gap:4px;}
+  .catbar .bar{flex:1;height:9px;background:var(--line);border-radius:5px;overflow:hidden;}
+  .catbar .bar>i{display:block;height:100%;background:var(--accent);border-radius:5px;}
+  .catbar .vl{text-align:right;font-size:13px;font-weight:700;color:var(--accent);flex:0 0 auto;white-space:nowrap;}
+  .catbar .vl small{font-weight:400;color:var(--sub);font-size:11px;margin-left:4px;}
+  .rank{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .rank .nm{width:84px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto;color:#5a5a52;}
+  .rank .bar{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
+  .rank .bar>i{display:block;height:100%;}
+  .rank .pc{width:42px;text-align:right;font-size:13px;font-weight:700;flex:0 0 auto;}
+  .arch-card{cursor:pointer;}
+  .arch-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px;}
+  .arch-tags .chip{cursor:default;}
+  /* mine */
+  .hero-mine{text-align:center;padding:30px 14px;background:linear-gradient(135deg,#1A1A1A,#2E2E2E);color:#fff;}
+  .hero-mine .app-name{font-family:Georgia,"Times New Roman",serif;font-size:34px;font-weight:700;letter-spacing:4px;}
+  .hero-mine .slogan{font-size:14px;font-weight:400;margin-top:11px;opacity:.85;letter-spacing:1px;}
+  .menu{background:var(--card);border-radius:15px;overflow:hidden;border:1px solid #F0EEE8;}
+  .menu-item{padding:15px 16px;font-size:15px;border-bottom:1px solid #F0EEE8;cursor:pointer;letter-spacing:.5px;}
+  .menu-item:last-child{border-bottom:none;}
+  .menu-item:active{background:#F7F6F2;}
+  .note{font-size:12px;color:var(--sub);text-align:center;margin-top:12px;line-height:1.6;padding:0 10px;letter-spacing:.5px;}
+  .tabbar{height:60px;background:#fff;border-top:1px solid var(--line);display:flex;flex:0 0 auto;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--sub);font-size:11px;cursor:pointer;letter-spacing:.5px;}
+  .tab.active{color:var(--accent);}
+  .tab .ic{font-size:21px;}
+  .empty{text-align:center;color:var(--sub);padding:40px 0;font-size:14px;}
+  /* v4 分类筛选：底部抽屉（无横向滚动） */
+  .filterbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .fb-cur{flex:1;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:10px 14px;font-size:14px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:7px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fb-btn{flex:0 0 auto;background:var(--accent);color:#fff;border-radius:13px;padding:10px 15px;font-size:13px;cursor:pointer;letter-spacing:.5px;}
+  .sheet-mask{position:absolute;inset:0;background:rgba(20,20,20,.34);opacity:0;pointer-events:none;transition:opacity .25s;z-index:30;}
+  .sheet-mask.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:24px 24px 0 0;padding:20px 16px 22px;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:31;box-shadow:0 -12px 44px rgba(0,0,0,.20);max-height:82%;display:flex;flex-direction:column;}
+  .sheet.show{transform:translateY(0);}
+  .sheet-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:0 2px;flex:0 0 auto;}
+  .sheet-hd>span:first-child{font-family:Georgia,"Times New Roman",serif;font-size:19px;font-weight:700;letter-spacing:2px;color:var(--accent);}
+  .sheet-x{font-size:14px;color:var(--sub);cursor:pointer;}
+  .sheet-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;overflow-y:auto;flex:1;padding-bottom:4px;}
+  .sheet-tile{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 2px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:#5a5a52;transition:.15s;}
+  .sheet-tile .e{font-size:20px;line-height:1;}
+  .sheet-tile.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  /* 添加页分类：常用分类平铺（3 列网格，禁止横向滚动）+「更多分类」抽屉按钮 */
+  .cat-common{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .cat-tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;color:#4a4a44;transition:.15s;}
+  .cat-tile .e{font-size:24px;line-height:1;}
+  .cat-tile.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 5px 16px rgba(0,0,0,.20);}
+  .cat-more{margin-top:9px;display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:12px 14px;cursor:pointer;font-size:14px;color:var(--text);letter-spacing:.3px;}
+  .cat-more .cm-cur{display:flex;align-items:center;gap:7px;font-weight:600;}
+  .cat-more .cm-go{font-size:13px;color:var(--sub);}
+  /* 归档冻结提示 */
+  .frozen-note{font-size:12px;color:var(--sub);background:#F2F1ED;border:1px solid #E2E0D8;border-radius:11px;padding:10px 12px;margin-bottom:12px;line-height:1.55;}
+  /* 删除二次确认弹窗 */
+  .modal-mask{position:absolute;inset:0;background:rgba(20,20,20,.40);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;}
+  .modal-mask.show{opacity:1;pointer-events:auto;}
+  .modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);width:300px;background:var(--card);border-radius:18px;padding:22px 20px 16px;text-align:center;z-index:41;opacity:0;pointer-events:none;transition:.2s;box-shadow:0 20px 60px rgba(0,0,0,.30);}
+  .modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .modal-title{font-size:17px;font-weight:700;color:var(--accent);margin-bottom:10px;letter-spacing:.5px;}
+  .modal-text{font-size:13.5px;color:#5a5a52;line-height:1.6;margin-bottom:18px;}
+  .modal-text b{color:#EF4B4B;}
+  .modal-actions{display:flex;gap:10px;}
+  /* v4 紧凑 / 宽松 排版切换 */
+  #listWrap.compact .card.item{padding:6px 10px;margin-bottom:5px;}
+  #listWrap.compact .ava{width:34px;height:34px;font-size:17px;border-radius:10px;}
+  #listWrap.compact .item-name{font-size:13.5px;line-height:1.2;}
+  #listWrap.compact .item-sub{font-size:10.5px;margin:1px 0 4px;}
+  #listWrap.compact .mini-prog{height:3px;}
+  #listWrap.compact .item-loss{font-size:9.5px;margin-top:3px;}
+  #listWrap.compact .daily{font-size:14px;}
+  #listWrap.compact .daily-sub,#listWrap.compact .held{font-size:9.5px;}
+  #listWrap.grid.compact{gap:7px;grid-auto-rows:100px;}
+  #listWrap.grid.compact .card.item{padding:8px 6px;}
+  #listWrap.grid.compact .ava{width:28px;height:28px;font-size:16px;margin-bottom:5px;border-radius:8px;}
+  #listWrap.grid.compact .item-name{font-size:12px;line-height:1.15;}
+  #listWrap.grid.compact .item-sub{font-size:9px;margin:2px 0 5px;}
+  #listWrap.grid.compact .mini-prog{height:3px;}
+  #listWrap.grid.compact .daily{font-size:13px;}
+  #listWrap.grid.compact .daily-sub{font-size:8.5px;}
+  #listWrap.grid.compact .held{font-size:8.5px;margin-top:3px;}
+</style>
+</head>
+<body>
+  <div class="caption">有数 v4 · 极简墨（时尚单色）｜ 点右上角 ▦ 切换方格视图</div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span class="right">●●● &nbsp; Wi-Fi &nbsp; 🔋</span></div>
+    <div class="screen">
+      <div class="scr active" id="scr-list">
+        <div class="navbar">物品<span class="view-toggle" id="densityToggle" onclick="toggleDensity()" style="right:52px">⤢</span><span class="view-toggle" id="viewToggle" onclick="toggleView()">▦</span></div>
+        <div class="content">
+          <div class="search" onclick="document.getElementById('q').focus()">🔍 搜索物品 / 品牌</div>
+          <input id="q" style="display:none" oninput="renderList()">
+          <div class="filterbar">
+            <div class="fb-cur" id="fbCur" onclick="openFilterSheet()">📋 全部</div>
+            <div class="fb-btn" onclick="openFilterSheet()">筛选 ⌄</div>
+          </div>
+          <div id="catChips" style="display:none"></div>
+          <div id="listWrap"></div>
+        </div>
+      </div>
+      <div class="scr" id="scr-detail">
+        <div class="navbar"><span class="back" onclick="backFromDetail()">‹</span><span id="detTitle">详情</span></div>
+        <div class="content" id="detWrap"></div>
+      </div>
+      <div class="scr" id="scr-entry">
+        <div class="navbar"><span class="back" onclick="showScreen('scr-list')">‹</span>添加物品</div>
+        <div class="content">
+          <div class="field"><label>名称 *</label><input id="e-name" placeholder="如 iPhone 15 Pro"></div>
+          <div class="field"><label>购买价格 *</label><div class="price-in"><span>¥</span><input id="e-price" type="number" placeholder="0.00" oninput="updatePreview()"></div></div>
+          <div class="field"><label>购买日期 *</label><input id="e-date" type="date" value="2026-07-09" oninput="updatePreview()"></div>
+          <div class="preview" id="e-preview">填写价格与日期后，自动预估「日均使用价格」</div>
+          <div class="field"><label>品牌</label><input id="e-brand" placeholder="选填，如 Apple"></div>
+          <div class="field"><label>分类</label>
+            <div id="e-cat-common" class="cat-common"></div>
+            <div class="cat-more" id="e-cat-more" onclick="openCatSheet()"></div>
+          </div>
+          <div class="field"><label>预计使用年限 *（用于计算损耗率，可修改）</label>
+            <div class="life-chips" id="e-life">
+              <span data-y="0.5">半年</span><span data-y="1" class="on">1 年</span><span data-y="2">2 年</span><span data-y="3">3 年</span><span data-y="5">5 年</span>
+            </div>
+            <input id="e-life-custom" type="number" placeholder="或自定义年限（年）" style="margin-top:9px;" oninput="customLife()">
+          </div>
+          <button class="btn-primary" onclick="saveEntry()">保存</button>
+        </div>
+      </div>
+      <div class="scr" id="scr-stats"><div class="navbar">统计</div><div class="content" id="statsWrap"></div></div>
+      <div class="scr" id="scr-archive"><div class="navbar"><span class="back" onclick="showScreen('scr-stats')">‹</span>归档物品</div><div class="content" id="archiveWrap"></div></div>
+      <div class="scr" id="scr-mine"><div class="navbar">我的</div><div class="content" id="mineWrap"></div></div>
+    </div>
+    <div class="fab" id="fab" onclick="openEntry()">＋</div>
+    <div class="tabbar">
+      <div class="tab active" id="tab-list" onclick="showScreen('scr-list')"><div class="ic">📦</div>物品</div>
+      <div class="tab" id="tab-stats" onclick="showScreen('scr-stats')"><div class="ic">📊</div>统计</div>
+      <div class="tab" id="tab-mine" onclick="showScreen('scr-mine')"><div class="ic">👤</div>我的</div>
+    </div>
+    <div class="sheet-mask" id="sheetMask" onclick="closeFilterSheet()"></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-hd"><span>分类筛选</span><span class="sheet-x" onclick="closeFilterSheet()">完成</span></div>
+      <div class="sheet-grid" id="sheetGrid"></div>
+    </div>
+    <div class="sheet-mask" id="catMask" onclick="closeCatSheet()"></div>
+    <div class="sheet" id="catSheet">
+      <div class="sheet-hd"><span>选择分类</span><span class="sheet-x" onclick="closeCatSheet()">完成</span></div>
+      <div class="sheet-grid" id="catSheetGrid"></div>
+    </div>
+    <!-- 删除二次确认弹窗 -->
+    <div class="modal-mask" id="delMask" onclick="closeDelModal()"></div>
+    <div class="modal" id="delModal">
+      <div class="modal-title">彻底删除</div>
+      <div class="modal-text">删除后数据将<b>永久不可恢复</b>，确定要删除这件物品吗？</div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeDelModal()">取消</button>
+        <button class="btn-danger" onclick="confirmDel()">确认删除</button>
+      </div>
+    </div>
+  </div>
+  <script src="shared.js"></script>
+  <script>
+    // v4 专属：底部抽屉式分类筛选（替代横向滚动条）
+    let isCompact = false;
+    function toggleDensity(){
+      isCompact = !isCompact;
+      document.getElementById('listWrap').classList.toggle('compact', isCompact);
+      document.getElementById('densityToggle').textContent = isCompact ? '⤡' : '⤢';
+    }
+    function buildSheet(){
+      // 展示完整分类体系（覆盖全部常见品类），而非仅有物品的品类
+      const cats = ['全部', ...CATS.map(c => c.key)];
+      document.getElementById('sheetGrid').innerHTML = cats.map(c => {
+        const ico = c === '全部' ? '📋' : (EMOJI[c] || '📦');
+        return `<div class="sheet-tile${c === curCat ? ' on' : ''}" onclick="v4setCat('${c}')"><span class="e">${ico}</span><span>${c}</span></div>`;
+      }).join('');
+    }
+    function updateFilterBar(){
+      const ico = curCat === '全部' ? '📋' : (EMOJI[curCat] || '📦');
+      document.getElementById('fbCur').textContent = ico + ' ' + curCat;
+      buildSheet();
+    }
+    function v4setCat(c){ setCat(c); updateFilterBar(); closeFilterSheet(); }
+    function openFilterSheet(){ buildSheet(); document.getElementById('sheetMask').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
+    function closeFilterSheet(){ document.getElementById('sheetMask').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
+    // 录入页分类抽屉（含全部分类；常用分类已在页面平铺，抽屉用于选其余）
+    function buildCatSheet(){
+      document.getElementById('catSheetGrid').innerHTML = CATS.map(c =>
+        `<div class="sheet-tile${c.key === selCat ? ' on' : ''}" onclick="pickCat('${c.key}')"><span class="e">${c.emoji}</span><span>${c.key}</span></div>`).join('');
+    }
+    function pickCat(k){ chooseCat(k); buildCatSheet(); closeCatSheet(); }
+    function openCatSheet(){ buildCatSheet(); document.getElementById('catMask').classList.add('show'); document.getElementById('catSheet').classList.add('show'); }
+    function closeCatSheet(){ document.getElementById('catMask').classList.remove('show'); document.getElementById('catSheet').classList.remove('show'); }
+    // 删除二次确认弹窗（shared.js 的 delItem 调用 openDelModal，确认按钮调用 confirmDel）
+    function openDelModal(){ document.getElementById('delMask').classList.add('show'); document.getElementById('delModal').classList.add('show'); }
+    function closeDelModal(){ document.getElementById('delMask').classList.remove('show'); document.getElementById('delModal').classList.remove('show'); }
+    updateFilterBar();
+  </script>
+</body>
+</html>

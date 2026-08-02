@@ -1,0 +1,8 @@
+{
+  "appId": "com.youshu.app",
+  "appName": "有数",
+  "webDir": "web",
+  "server": {
+    "androidScheme": "https"
+  }
+}

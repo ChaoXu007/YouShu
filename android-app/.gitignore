@@ -1,0 +1,7 @@
+# 本仓库忽略规则统一在根目录 .gitignore 管理（含 native 构建产物、node_modules、密钥等）。
+# 以下为 Capacitor 约定的本地补充，与根规则不冲突：
+node_modules/
+android/app/src/main/assets/public/
+*.keystore
+*.jks
+.DS_Store

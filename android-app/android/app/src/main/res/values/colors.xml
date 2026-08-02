@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#111111</color>
+    <color name="colorPrimaryDark">#111111</color>
+    <color name="colorAccent">#111111</color>
+    <!-- 状态栏 / 导航栏统一用 APP 背景色，消除底部色差 -->
+    <color name="statusBarColor">#FBFBF9</color>
+    <color name="navigationBarColor">#FBFBF9</color>
+</resources>

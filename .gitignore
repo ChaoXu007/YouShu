@@ -1,0 +1,39 @@
+# ============================================================
+# 有数 (YouShu) · 根 .gitignore（忽略规则统一在此管理）
+# ============================================================
+
+# ---------- 操作系统 / 编辑器 ----------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------- 日志 ----------
+*.log
+
+# ---------- 环境变量 / 密钥配置（提前兜底，避免日后误提交） ----------
+.env
+.env.*
+
+# ---------- 工具 / AI 产物（本地记忆、计划草稿等，非项目源码） ----------
+.workbuddy/
+.zcode/
+
+# ---------- Node 依赖 ----------
+android-app/node_modules/
+
+# ---------- 安卓原生：构建产物（源码保留，仅忽略生成物） ----------
+android-app/android/.gradle/
+android-app/android/**/build/
+android-app/android/local.properties
+android-app/android/*.iml
+android-app/android/.idea/
+
+# ---------- 安卓原生：Capacitor 同步生成的 Web 资源（由 npx cap sync 重新生成） ----------
+android-app/android/app/src/main/assets/public/
+android-app/android/app/src/main/assets/capacitor.config.json
+android-app/android/app/src/main/assets/capacitor.plugins.json
+
+# ---------- 签名密钥（绝不可提交，避免泄密） ----------
+*.keystore
+*.jks
