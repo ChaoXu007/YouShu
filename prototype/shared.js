@@ -217,28 +217,16 @@ function saveEntry(){
 }
 
 /* ---------- 统计 ---------- */
-let statDim = 'price';   // 分类分布维度：'price'=按总价 / 'count'=按数量
-function setStatDim(d){ if(statDim === d) return; statDim = d; renderStats(); }
 function renderStats(){
   const act = activeItems();
   const totalAssets = act.reduce((s, it) => s + it.price, 0);
   const totalDaily  = act.reduce((s, it) => s + daily(it), 0);
-  // 分类分布：同时算「价格」与「数量」两个维度，按当前维度排序与展示
+  // 分类分布：按总价倒序，每行同时显示 总价+件数+占比（无切换控件）
   const byPrice = {}, byCount = {};
   act.forEach(it => { byPrice[it.cat] = (byPrice[it.cat] || 0) + it.price; byCount[it.cat] = (byCount[it.cat] || 0) + 1; });
-  const dimPrice = statDim === 'price';
-  const byDim = dimPrice ? byPrice : byCount;
-  const totalDim = dimPrice ? totalAssets : act.length;
-  const catRows = Object.keys(byDim).map(c => ({c, v: byDim[c], price: byPrice[c], count: byCount[c]})).sort((a, b) => b.v - a.v);
-  const maxCat = Math.max(...catRows.map(r => r.v), 1);
-  const dimLabel = dimPrice ? '总价' : '数量';
-  const dimToggle = `<span style="display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:11px;font-weight:600;flex:0 0 auto;">
-    <span onclick="setStatDim('price')" style="padding:4px 13px;cursor:pointer;${dimPrice?'background:var(--accent);color:#fff;':'color:var(--sub);'}">价格</span>
-    <span onclick="setStatDim('count')" style="padding:4px 13px;cursor:pointer;${!dimPrice?'background:var(--accent);color:#fff;':'color:var(--sub);'}">数量</span>
-  </span>`;
-  const catVal = r => dimPrice
-    ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
-    : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
+  const catRows = Object.keys(byPrice).map(c => ({c, price: byPrice[c], count: byCount[c] || 0})).sort((a, b) => b.price - a.price);
+  const maxCat = Math.max(...catRows.map(r => r.price), 1);
+  const catVal = r => `${fmt(r.price)}<small>${r.count} 件 · ${(r.price / (totalAssets || 1) * 100).toFixed(0)}%</small>`;
   const rankDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
   const rankHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
   const mxD = Math.max(...rankDaily.map(it => daily(it)), 1e-9);
@@ -258,12 +246,10 @@ function renderStats(){
       <div class="sum"><div class="t">平均持有</div><div class="v">${avgHeld}<small> 天</small></div></div>
     </div>
     <div class="card">
-      <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>分类分布（按${dimLabel}）</span>${dimToggle}
-      </div>
+      <div class="sec-title">分类分布</div>
       ${catRows.map(r => `<div class="catbar">
         <span class="nm">${EMOJI[r.c] || '📦'} ${r.c}</span>
-        <span class="bar"><i style="width:${r.v / maxCat * 100}%"></i></span>
+        <span class="bar"><i style="width:${r.price / maxCat * 100}%"></i></span>
         <span class="vl">${catVal(r)}</span>
       </div>`).join('')}
     </div>

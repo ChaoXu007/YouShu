@@ -63,7 +63,6 @@ let selCat = 'cat-shuma'; // 录入页当前选择
 let isGrid = false;
 let isCompact = false;
 let detailFrom = 'scr-list';
-let statDim = 'price';
 let sortKey = 'created';
 let sortDir = 'desc';
 let editingId = null;
@@ -533,7 +532,6 @@ function openSavedModal(){ document.getElementById('savedMask').classList.add('s
 function closeSavedModal(){ document.getElementById('savedMask').classList.remove('show'); document.getElementById('savedModal').classList.remove('show'); }
 
 /* ---------- 统计 ---------- */
-function setStatDim(d){ if(statDim === d) return; statDim = d; renderStats(); }
 function renderStats(){
   const act = activeItems();
   const totalAssets = act.reduce((s, it) => s + it.price, 0);
@@ -544,21 +542,13 @@ function renderStats(){
     byPrice[k] = (byPrice[k] || 0) + it.price;
     byCount[k] = (byCount[k] || 0) + 1;
   });
-  const dimPrice = statDim === 'price';
-  const byDim = dimPrice ? byPrice : byCount;
-  const totalDim = dimPrice ? totalAssets : act.length;
-  // 按分类在管理页的顺序排列
+  // 分类分布：按总价倒序（最长条在最上），每行同时显示 总价+件数+占比（无切换控件）
   const flat = sortedCatsFlat();
-  const catRows = flat.filter(c => byDim[c.id]).map(c => ({c, v: byDim[c.id], price: byPrice[c.id]||0, count: byCount[c.id]||0}));
-  const maxCat = Math.max(...catRows.map(r => r.v), 1);
-  const dimLabel = dimPrice ? '总价' : '数量';
-  const dimToggle = `<span style="display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:11px;font-weight:600;flex:0 0 auto;">
-    <span onclick="setStatDim('price')" style="padding:4px 13px;cursor:pointer;${dimPrice?'background:var(--accent);color:#fff;':'color:var(--sub);'}">价格</span>
-    <span onclick="setStatDim('count')" style="padding:4px 13px;cursor:pointer;${!dimPrice?'background:var(--accent);color:#fff;':'color:var(--sub);'}">数量</span>
-  </span>`;
-  const catVal = r => dimPrice
-    ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
-    : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
+  const catRows = flat.filter(c => byPrice[c.id])
+    .map(c => ({c, price: byPrice[c.id], count: byCount[c.id] || 0}))
+    .sort((a, b) => b.price - a.price);
+  const maxCat = Math.max(...catRows.map(r => r.price), 1);
+  const catVal = r => `${fmt(r.price)}<small>${r.count} 件 · ${(r.price / (totalAssets || 1) * 100).toFixed(0)}%</small>`;
   // ===== 排行榜（各 TOP5，条宽相对组内最大值；损耗排行已删：loss 封顶 100% 后大量并列饱和，无区分度） =====
   const byDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
   const byHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
@@ -582,12 +572,10 @@ function renderStats(){
       <div class="sum"><div class="t">平均持有</div><div class="v">${avgHeld}<small> 天</small></div></div>
     </div>
     <div class="card">
-      <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>分类分布</span>${dimToggle}
-      </div>
+      <div class="sec-title">分类分布</div>
       ${catRows.map(r => `<div class="catbar">
         <span class="nm">${catEmoji(r.c.id)} ${esc(r.c.name)}</span>
-        <span class="bar"><i style="width:${r.v / maxCat * 100}%"></i></span>
+        <span class="bar"><i style="width:${r.price / maxCat * 100}%"></i></span>
         <span class="vl">${catVal(r)}</span>
       </div>`).join('')}
     </div>
