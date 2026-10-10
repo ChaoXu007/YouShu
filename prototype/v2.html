@@ -83,10 +83,11 @@
   .cat-chips span{flex:0 0 auto;background:#fff;border:1px solid #D9D9DE;border-radius:14px;padding:8px 13px;font-size:13px;color:#6b6b70;cursor:pointer;display:flex;align-items:center;gap:5px;}
   .cat-chips span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
   /* stats */
-  .sum-grid{display:flex;gap:12px;margin-bottom:12px;}
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
   .sum{flex:1;background:var(--card);border-radius:15px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
   .sum .t{font-size:12px;color:var(--sub);}
   .sum .v{font-size:22px;font-weight:800;color:var(--accent);margin-top:6px;}
+  .sum .v small{font-size:13px;color:var(--sub);font-weight:400;margin-left:2px;}
   .sec-title{font-size:14px;font-weight:700;margin:6px 2px 12px;}
   .donut-wrap{display:flex;align-items:center;gap:16px;}
   .donut{width:120px;height:120px;border-radius:50%;flex:0 0 auto;position:relative;}
@@ -100,7 +101,7 @@
   .rank .nm{width:84px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto;}
   .rank .bar{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
   .rank .bar>i{display:block;height:100%;}
-  .rank .pc{width:42px;text-align:right;font-size:13px;font-weight:700;flex:0 0 auto;}
+  .rank .pc{min-width:52px;text-align:right;font-size:13px;font-weight:700;flex:0 0 auto;white-space:nowrap;}
   .arch-card{cursor:pointer;}
   .arch-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px;}
   .arch-tags .chip{cursor:default;}

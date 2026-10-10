@@ -559,10 +559,30 @@ function renderStats(){
   const catVal = r => dimPrice
     ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
     : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
+  // ===== 排行榜（各 TOP5；损耗条宽=百分比本身，日均/持有条宽相对组内最大值） =====
+  const byLoss  = [...act].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
+  const byDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
+  const byHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
+  const mxD = Math.max(...byDaily.map(it => daily(it)), 1e-9);
+  const mxH = Math.max(...byHeld.map(it => held(it)), 1e-9);
+  const rankCard = (title, rows) => rows.length ? `
+    <div class="card">
+      <div class="sec-title">${title}</div>
+      ${rows}
+    </div>` : '';
+  const lossRows  = byLoss.map(it => { const l = loss(it), c = lossColor(l); return `
+    <div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${l}%;background:${c}"></i></span><span class="pc" style="color:${c}">${l}%</span></div>`; }).join('');
+  const dailyRows = byDaily.map(it => { const d = daily(it); return `
+    <div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${d / mxD * 100}%;background:var(--accent)"></i></span><span class="pc">${fmt(d)}</span></div>`; }).join('');
+  const heldRows  = byHeld.map(it => { const h = held(it); return `
+    <div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${h / mxH * 100}%;background:var(--accent)"></i></span><span class="pc">${h.toLocaleString('zh-CN')} 天</span></div>`; }).join('');
+  const avgHeld = act.length ? Math.round(act.reduce((s, it) => s + held(it), 0) / act.length) : 0;
   document.getElementById('statsWrap').innerHTML = `
     <div class="sum-grid">
       <div class="sum"><div class="t">总资产（原价）</div><div class="v">${fmt(totalAssets)}</div></div>
       <div class="sum"><div class="t">总日均成本</div><div class="v">${fmt(totalDaily)}</div></div>
+      <div class="sum"><div class="t">物品件数</div><div class="v">${act.length}<small> 件</small></div></div>
+      <div class="sum"><div class="t">平均持有</div><div class="v">${avgHeld}<small> 天</small></div></div>
     </div>
     <div class="card">
       <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -573,7 +593,10 @@ function renderStats(){
         <span class="bar"><i style="width:${r.v / maxCat * 100}%"></i></span>
         <span class="vl">${catVal(r)}</span>
       </div>`).join('')}
-    </div>`;
+    </div>
+    ${rankCard('损耗排行 TOP5', lossRows)}
+    ${rankCard('日均最贵 TOP5', dailyRows)}
+    ${rankCard('持有最久 TOP5', heldRows)}`;
 }
 function openArchive(){ renderArchive(); showScreen('scr-archive'); }
 function renderArchive(){

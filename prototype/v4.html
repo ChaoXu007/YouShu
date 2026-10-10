@@ -96,10 +96,11 @@
   .life-chips span{flex:0 0 auto;background:#fff;border:1px solid var(--chip-line);border-radius:14px;padding:8px 15px;font-size:13px;color:#7a7a72;cursor:pointer;}
   .life-chips span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
   /* stats */
-  .sum-grid{display:flex;gap:12px;margin-bottom:12px;}
+  .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
   .sum{flex:1;background:var(--card);border-radius:15px;padding:14px;border:1px solid #F0EEE8;}
   .sum .t{font-size:12px;color:var(--sub);}
   .sum .v{font-size:22px;font-weight:800;color:var(--accent);margin-top:6px;}
+  .sum .v small{font-size:13px;color:var(--sub);font-weight:400;margin-left:2px;}
   .sec-title{font-size:14px;font-weight:700;margin:6px 2px 12px;letter-spacing:.5px;}
   /* 分类分布：横向条状图（按总价倒序，风格同损耗排行） */
   .catbar{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
@@ -113,7 +114,7 @@
   .rank .nm{width:84px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto;color:#5a5a52;}
   .rank .bar{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
   .rank .bar>i{display:block;height:100%;}
-  .rank .pc{width:42px;text-align:right;font-size:13px;font-weight:700;flex:0 0 auto;}
+  .rank .pc{min-width:52px;text-align:right;font-size:13px;font-weight:700;flex:0 0 auto;white-space:nowrap;}
   .arch-card{cursor:pointer;}
   .arch-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px;}
   .arch-tags .chip{cursor:default;}

@@ -240,6 +240,11 @@ function renderStats(){
     ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
     : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
   const rank = [...act].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
+  const rankDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
+  const rankHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
+  const mxD = Math.max(...rankDaily.map(it => daily(it)), 1e-9);
+  const mxH = Math.max(...rankHeld.map(it => held(it)), 1e-9);
+  const avgHeld = act.length ? Math.round(act.reduce((s, it) => s + held(it), 0) / act.length) : 0;
   // 归档模块
   const arch = ITEMS.filter(i => i.archived);
   const archByCat = {}; arch.forEach(i => archByCat[i.cat] = (archByCat[i.cat] || 0) + 1);
@@ -250,6 +255,8 @@ function renderStats(){
     <div class="sum-grid">
       <div class="sum"><div class="t">总资产（原价）</div><div class="v">${fmt(totalAssets)}</div></div>
       <div class="sum"><div class="t">总日均成本</div><div class="v">${fmt(totalDaily)}</div></div>
+      <div class="sum"><div class="t">物品件数</div><div class="v">${act.length}<small> 件</small></div></div>
+      <div class="sum"><div class="t">平均持有</div><div class="v">${avgHeld}<small> 天</small></div></div>
     </div>
     <div class="card">
       <div class="sec-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -262,9 +269,17 @@ function renderStats(){
       </div>`).join('')}
     </div>
     <div class="card">
-      <div class="sec-title">损耗排行（Top 5）</div>
+      <div class="sec-title">损耗排行 TOP5</div>
       ${rank.map(it => { const l = loss(it), c = lossColor(l); return `<div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${l}%;background:${c}"></i></span><span class="pc" style="color:${c}">${l}%</span></div>`; }).join('')}
     </div>
+    ${rankDaily.length ? `<div class="card">
+      <div class="sec-title">日均最贵 TOP5</div>
+      ${rankDaily.map(it => { const d = daily(it); return `<div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${d / mxD * 100}%;background:var(--accent)"></i></span><span class="pc">${fmt(d)}</span></div>`; }).join('')}
+    </div>` : ''}
+    ${rankHeld.length ? `<div class="card">
+      <div class="sec-title">持有最久 TOP5</div>
+      ${rankHeld.map(it => { const h = held(it); return `<div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${h / mxH * 100}%;background:var(--accent)"></i></span><span class="pc">${h.toLocaleString('zh-CN')} 天</span></div>`; }).join('')}
+    </div>` : ''}
     <div class="card arch-card" onclick="openArchive()">
       <div class="loss-head"><span>📦 归档物品</span><b style="color:#9aa0a6">${arch.length} 件 ›</b></div>
       <div class="loss-foot">已归档物品不计入上方统计，点击查看分类与详情</div>
