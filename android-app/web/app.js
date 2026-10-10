@@ -559,8 +559,7 @@ function renderStats(){
   const catVal = r => dimPrice
     ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
     : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
-  // ===== 排行榜（各 TOP5；损耗条宽=百分比本身，日均/持有条宽相对组内最大值） =====
-  const byLoss  = [...act].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
+  // ===== 排行榜（各 TOP5，条宽相对组内最大值；损耗排行已删：loss 封顶 100% 后大量并列饱和，无区分度） =====
   const byDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
   const byHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
   const mxD = Math.max(...byDaily.map(it => daily(it)), 1e-9);
@@ -570,8 +569,6 @@ function renderStats(){
       <div class="sec-title">${title}</div>
       ${rows}
     </div>` : '';
-  const lossRows  = byLoss.map(it => { const l = loss(it), c = lossColor(l); return `
-    <div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${l}%;background:${c}"></i></span><span class="pc" style="color:${c}">${l}%</span></div>`; }).join('');
   const dailyRows = byDaily.map(it => { const d = daily(it); return `
     <div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${d / mxD * 100}%;background:var(--accent)"></i></span><span class="pc">${fmt(d)}</span></div>`; }).join('');
   const heldRows  = byHeld.map(it => { const h = held(it); return `
@@ -594,7 +591,6 @@ function renderStats(){
         <span class="vl">${catVal(r)}</span>
       </div>`).join('')}
     </div>
-    ${rankCard('损耗排行 TOP5', lossRows)}
     ${rankCard('日均最贵 TOP5', dailyRows)}
     ${rankCard('持有最久 TOP5', heldRows)}`;
 }

@@ -239,7 +239,6 @@ function renderStats(){
   const catVal = r => dimPrice
     ? `${fmt(r.v)}<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`
     : `${r.v} 件<small>${(r.v / (totalDim || 1) * 100).toFixed(0)}%</small>`;
-  const rank = [...act].sort((a, b) => loss(b) - loss(a)).slice(0, 5);
   const rankDaily = [...act].sort((a, b) => daily(b) - daily(a)).slice(0, 5);
   const rankHeld  = [...act].sort((a, b) => held(b) - held(a)).slice(0, 5);
   const mxD = Math.max(...rankDaily.map(it => daily(it)), 1e-9);
@@ -267,10 +266,6 @@ function renderStats(){
         <span class="bar"><i style="width:${r.v / maxCat * 100}%"></i></span>
         <span class="vl">${catVal(r)}</span>
       </div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="sec-title">损耗排行 TOP5</div>
-      ${rank.map(it => { const l = loss(it), c = lossColor(l); return `<div class="rank"><span class="nm">${esc(it.name)}</span><span class="bar"><i style="width:${l}%;background:${c}"></i></span><span class="pc" style="color:${c}">${l}%</span></div>`; }).join('')}
     </div>
     ${rankDaily.length ? `<div class="card">
       <div class="sec-title">日均最贵 TOP5</div>
