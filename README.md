@@ -32,7 +32,7 @@
 
 ## 当前形态
 
-- **Web 高保真原型**（`prototype/`，含 v1–v4 多版视觉对比，定稿方向为 v4「极简墨」），可直接用浏览器打开 `prototype/v4.html` 预览。
+- **Web 高保真原型**（`prototype/`，v4「极简墨」为唯一定稿，只保留这一份最新原型），可直接用浏览器打开 `prototype/v4.html` 预览。
 - **安卓 APK**（`android-app/`，Capacitor 壳 + v4 UI），可在本机安卓手机自测。
 
 > 注：v1 为**纯本地存储 + 导出/导入**，不含云端同步与订阅；云同步与订阅作为架构扩展点预留，未来同版本上线。
@@ -45,9 +45,9 @@ YouShu/
 │   ├── 个人物品管理小程序_产品调研报告.md
 │   ├── 个人物品管理小程序_产品定位与MVP规划.md
 │   ├── 小程序技术架构方案.md
-│   └── 安卓技术架构方案.md
-├── prototype/                # Web 高保真原型（v1–v4 视觉对比 + 设计探索稿）
-│   └── archive/              # 已弃用的探索稿
+│   ├── 安卓技术架构方案.md
+│   └── UI优化方案.md
+├── prototype/                # Web 高保真原型（v4 唯一定稿 + shared.js 共享逻辑）
 ├── android-app/              # 安卓 APK 工程（Capacitor）
 │   ├── web/                  # 前端应用源码（Capacitor 的 webDir）
 │   ├── android/              # 原生安卓工程（构建产物已 gitignore）
