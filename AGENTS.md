@@ -56,6 +56,16 @@ C:\Android\gradle-8.2.1\bin\gradle.bat -p C:\project\YouShu\android-app\android 
 ```
 - APK 产物：`android/app/build/outputs/apk/debug/app-debug.apk`（debug 签名，可直接 USB 调试直装或传手机安装）。
 - 首次生成安卓工程用 `npx cap add android`（已做过，一般不必重跑）。
+- **PowerShell 版实测命令（2026-10-11 全流程验证通过：sync 0.05s + 构建 22s，AI 可直接复制执行）**：
+  ```powershell
+  # ① 同步（workdir 用 C:\project\YouShu\android-app）
+  npx cap sync
+  # ② 构建：显式设环境变量最稳（勿依赖进程继承），输出取尾部 15 行
+  $env:JAVA_HOME='C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot\'; $env:ANDROID_HOME='C:\Android\Sdk'; & 'C:\Android\gradle-8.2.1\bin\gradle.bat' -p C:\project\YouShu\android-app\android assembleDebug --no-daemon --console=plain 2>&1 | Select-Object -Last 15
+  # ③ 验证产物：LastWriteTime 应为刚刚、约 3.6MB，才算打包成功
+  Get-Item C:\project\YouShu\android-app\android\app\build\outputs\apk\debug\app-debug.apk | Select-Object Name,@{n='SizeMB';e={[math]::Round($_.Length/1MB,2)}},LastWriteTime
+  ```
+  正常耗时基线：依赖缓存后 **≈20~30s**；远超此时长先按坑 8 查下载。**成功标准 = `BUILD SUCCESSFUL` 且 ③ 的时间戳已刷新**，缺一不可。
 
 ### ⚠️ 本机已踩过的坑（务必避开，别重蹈覆辙）
 1. **Bash 直接调 `cmd.exe` 被安全策略拦截**（"Invoking cmd.exe from Bash bypasses all command validation"）——所有 `cmd //c xxx` 都没真正执行。**对策**：用 **PowerShell 工具** `& 'C:\path\to\xxx.bat'` 直接调用原生 bat（sdkmanager / gradle 都走这条通道）。
