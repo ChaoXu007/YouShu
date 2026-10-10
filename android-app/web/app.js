@@ -100,6 +100,7 @@ function buildSheet(){
 }
 function updateFilterBar(){
   document.getElementById('fbCur').textContent = curCat === 'all' ? '全部' : catName(curCat);
+  document.getElementById('flChip').classList.toggle('on', curCat !== 'all');
   buildSheet();
 }
 function v4setCat(c){ curCat = c; updateFilterBar(); closeFilterSheet(); renderList(); }
@@ -183,6 +184,7 @@ function itemCard(it, onclick){
 
 /* ---------- 首页列表 ---------- */
 const SORT_LABELS = { created:'创建时间', cat:'分类', price:'价格', loss:'损耗率' };
+const SORT_SHORT  = { created:'时间',   cat:'分类', price:'价格', loss:'损耗' }; // chip 短标签
 function sortItems(list){
   if(sortKey === 'created'){
     const idx = it => ITEMS.indexOf(it);
@@ -219,9 +221,10 @@ function renderList(){
 }
 /* ---------- 排序抽屉 ---------- */
 function updateSortBar(){
-  const label = SORT_LABELS[sortKey];
   const arrow = sortDir === 'asc' ? '↑' : '↓';
-  document.getElementById('sbCur').textContent = label + arrow;
+  document.getElementById('sbCur').textContent = SORT_SHORT[sortKey] + arrow;
+  // 非默认排序维度时 chip 黑底外显，默认（创建时间）保持中性
+  document.getElementById('sortChip').classList.toggle('on', sortKey !== 'created');
 }
 function buildSortSheet(){
   const upArr = '<path d="M12 5v14m0-14l-5 5m5-5l5 5"/>';
@@ -241,6 +244,11 @@ function setSort(k){
 }
 function openSortSheet(){ buildSortSheet(); document.getElementById('sortMask').classList.add('show'); document.getElementById('sortSheet').classList.add('show'); }
 function closeSortSheet(){ document.getElementById('sortMask').classList.remove('show'); document.getElementById('sortSheet').classList.remove('show'); }
+
+/* ---------- 搜索聚焦：筛选/排序 chip 淡出，输入框临时占满整行 ---------- */
+function searchFocus(on){
+  document.getElementById('searchRow').classList.toggle('searching', on);
+}
 
 /* ---------- 长按弹窗（列表+方格统一） ---------- */
 let pendingAct = null;

@@ -24,7 +24,18 @@
   .content{flex:1;overflow-y:auto;padding:14px;}
   .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #F0EEE8;}
   /* list */
-  .search{background:var(--card);border-radius:12px;padding:9px 14px;color:var(--sub);font-size:14px;margin-bottom:12px;border:1px solid #F0EEE8;}
+  .search{background:var(--card);border-radius:12px;padding:9px 14px;color:var(--sub);font-size:14px;border:1px solid #F0EEE8;}
+  /* v4 单行工具栏：搜索 + 筛选 chip（聚焦搜索时 chip 淡出，chip 固定不滚动） */
+  .searchrow{display:flex;gap:8px;margin-bottom:12px;align-items:center;}
+  .searchrow .search{flex:1;min-width:0;}
+  .chipbar{display:flex;gap:8px;flex:0 0 auto;max-width:170px;overflow:hidden;transition:max-width .25s cubic-bezier(.2,.8,.2,1),opacity .18s ease;}
+  .searchrow.searching .chipbar{max-width:0;opacity:0;pointer-events:none;}
+  .fl-chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:10px 12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;}
+  .fl-chip .fl-txt{font-size:13.5px;color:var(--text);font-weight:500;letter-spacing:.3px;}
+  .fl-chip .fb-arrow{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:var(--sub);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .fl-chip.on{background:var(--accent);border-color:var(--accent);}
+  .fl-chip.on .fl-txt{color:var(--sel-text);font-weight:600;}
+  .fl-chip.on .fb-arrow{stroke:rgba(255,255,255,.75);}
   .chips{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:10px;margin-bottom:2px;}
   .chip{flex:0 0 auto;background:var(--chip-bg);border:1px solid var(--chip-line);border-radius:16px;padding:6px 14px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap;}
   .chip.on{background:var(--accent);border-color:var(--accent);color:var(--sel-text);font-weight:600;}
@@ -121,9 +132,6 @@
   .tab .ic{font-size:21px;}
   .empty{text-align:center;color:var(--sub);padding:40px 0;font-size:14px;}
   /* v4 分类筛选：底部抽屉（无横向滚动） */
-  .filterbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .fb-cur{flex:1;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:10px 14px;font-size:14px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:7px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .fb-btn{flex:0 0 auto;background:var(--accent);color:#fff;border-radius:13px;padding:10px 15px;font-size:13px;cursor:pointer;letter-spacing:.5px;}
   .sheet-mask{position:absolute;inset:0;background:rgba(20,20,20,.34);opacity:0;pointer-events:none;transition:opacity .25s;z-index:30;}
   .sheet-mask.show{opacity:1;pointer-events:auto;}
   .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:24px 24px 0 0;padding:20px 16px 22px;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:31;box-shadow:0 -12px 44px rgba(0,0,0,.20);max-height:82%;display:flex;flex-direction:column;}
@@ -182,11 +190,12 @@
       <div class="scr active" id="scr-list">
         <div class="navbar">物品<span class="view-toggle" id="densityToggle" onclick="toggleDensity()" style="right:52px">⤢</span><span class="view-toggle" id="viewToggle" onclick="toggleView()">▦</span></div>
         <div class="content">
-          <div class="search" onclick="document.getElementById('q').focus()">🔍 搜索物品 / 品牌</div>
-          <input id="q" style="display:none" oninput="renderList()">
-          <div class="filterbar">
-            <div class="fb-cur" id="fbCur" onclick="openFilterSheet()">📋 全部</div>
-            <div class="fb-btn" onclick="openFilterSheet()">筛选 ⌄</div>
+          <div class="searchrow" id="searchRow">
+            <div class="search" onclick="document.getElementById('q').focus()">🔍 搜索物品 / 品牌</div>
+            <input id="q" style="display:none" oninput="renderList()" onfocus="searchFocus(true)" onblur="searchFocus(false)">
+            <div class="chipbar">
+              <div class="fl-chip" id="flChip" onclick="openFilterSheet()"><span class="fl-txt" id="fbCur">📋 全部</span><svg class="fb-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+            </div>
           </div>
           <div id="catChips" style="display:none"></div>
           <div id="listWrap"></div>
@@ -268,8 +277,11 @@
     function updateFilterBar(){
       const ico = curCat === '全部' ? '📋' : (EMOJI[curCat] || '📦');
       document.getElementById('fbCur').textContent = ico + ' ' + curCat;
+      document.getElementById('flChip').classList.toggle('on', curCat !== '全部');
       buildSheet();
     }
+    // 搜索聚焦时 chip 淡出，输入框临时占满整行
+    function searchFocus(on){ document.getElementById('searchRow').classList.toggle('searching', on); }
     function v4setCat(c){ setCat(c); updateFilterBar(); closeFilterSheet(); }
     function openFilterSheet(){ buildSheet(); document.getElementById('sheetMask').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
     function closeFilterSheet(){ document.getElementById('sheetMask').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }

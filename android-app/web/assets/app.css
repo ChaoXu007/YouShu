@@ -19,7 +19,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .content{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));}
 .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #F0EEE8;}
 /* list */
-.search{position:relative;background:var(--card);border-radius:12px;margin-bottom:12px;border:1px solid #F0EEE8;display:flex;align-items:center;}
+.search{position:relative;background:var(--card);border-radius:12px;border:1px solid #F0EEE8;display:flex;align-items:center;}
 .search .search-ic{position:absolute;left:13px;font-size:14px;color:var(--sub);pointer-events:none;}
 .search input{width:100%;border:none;background:transparent;padding:11px 14px 11px 34px;font-size:14px;color:var(--text);outline:none;border-radius:12px;}
 .search input::placeholder{color:var(--sub);}
@@ -157,15 +157,20 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .tab.active .ic{stroke:var(--accent);stroke-width:2;}
 .empty{text-align:center;color:var(--sub);padding:40px 0;font-size:14px;}
 /* 工具栏：分类筛选 + 排序 并排 */
-.toolbar{display:flex;gap:9px;margin-bottom:12px;}
-.filterbar{flex:1;min-width:0;display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:11px 14px;cursor:pointer;}
-.filterbar:active{background:#F7F6F2;}
-.filterbar .fb-ic{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;}
-.filterbar .fb-cur{flex:1;font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.3px;}
-.filterbar .fb-arrow{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:var(--sub);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.sortbar{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:11px 13px;cursor:pointer;}
-.sortbar:active{background:#F7F6F2;}
-.sortbar .sb-cur{font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;}
+/* 单行工具栏：搜索 + 筛选/排序 chip（chip 固定不滚动，禁横滑；聚焦搜索时 chip 淡出让位） */
+.searchrow{display:flex;gap:8px;margin-bottom:12px;align-items:center;}
+.searchrow .search{flex:1;min-width:0;}
+.chipbar{display:flex;gap:8px;flex:0 0 auto;max-width:260px;overflow:hidden;transition:max-width .25s cubic-bezier(.2,.8,.2,1),opacity .18s ease;}
+.searchrow.searching .chipbar{max-width:0;opacity:0;pointer-events:none;}
+.fl-chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--chip-line);border-radius:13px;padding:11px 12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;}
+.fl-chip:active{background:#F7F6F2;}
+.fl-chip .fl-txt{font-size:13.5px;color:var(--text);font-weight:500;letter-spacing:.3px;}
+.fl-chip .fb-ic{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;}
+.fl-chip .fb-arrow{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:var(--sub);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.fl-chip.on{background:var(--accent);border-color:var(--accent);}
+.fl-chip.on .fl-txt{color:var(--sel-text);font-weight:600;}
+.fl-chip.on .fb-ic{stroke:#fff;}
+.fl-chip.on .fb-arrow{stroke:rgba(255,255,255,.75);}
 /* 排序抽屉列表 */
 .sort-list{padding:0 4px;}
 .sort-row{display:flex;align-items:center;justify-content:space-between;padding:15px 4px;border-bottom:1px solid #F0EEE8;cursor:pointer;}
