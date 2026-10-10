@@ -60,6 +60,7 @@ function loss(it){ return Math.min(100, Math.round(held(it) / (it.life * 365) * 
 function remain(it){ return Math.max(0, it.life * 365 - held(it)); }
 function isoDate(d){ const x = d || TODAY; const y = x.getFullYear(); const m = String(x.getMonth()+1).padStart(2,'0'); const dd = String(x.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
 function fmt(n){ return '¥' + Number(n).toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtPrice(n){ n = Number(n); return n >= 1000 ? '¥' + n.toLocaleString('zh-CN', {maximumFractionDigits:0}) : fmt(n); }
 function esc(s){ return (s || '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
 // 损耗进度条配色：<50% 绿 / 50%~80% 黄 / 80%~100% 红（损耗=负向信号）
@@ -96,7 +97,7 @@ function itemCard(it, onclick){
     <div class="ava">${it.emoji}</div>
     <div class="item-main">
       <div class="item-name">${esc(it.name)}</div>
-      <div class="item-sub">${esc(it.brand)} · ${it.cat}</div>
+      <div class="item-sub"><span class="sub-price">${fmtPrice(it.price)}</span>${it.brand ? ' · ' + esc(it.brand) : ''} · ${it.cat}</div>
       <div class="mini-prog"><i style="width:${l}%;background:${c}"></i></div>
       <div class="item-loss" style="color:${c}">损耗 ${l}%</div>
     </div>

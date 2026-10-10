@@ -138,6 +138,13 @@
   function fmt(n) {
     return '¥' + Number(n).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
+  // 卡片价格短格式：≥1000 千分位无小数（列表看量级），<1000 沿用 fmt 两位小数
+  function fmtPrice(n) {
+    n = Number(n);
+    return n >= 1000
+      ? '¥' + n.toLocaleString('zh-CN', { maximumFractionDigits: 0 })
+      : fmt(n);
+  }
   function esc(s) {
     return (s || '').toString().replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   }
@@ -174,6 +181,6 @@
     // 向后兼容派生
     EMOJI, CATS, COMMON_CATS,
     uid, refDate, daysSince, held, daily, loss, remain,
-    isoDate, fmt, esc, lossColor, activeItems, mergeImport
+    isoDate, fmt, fmtPrice, esc, lossColor, activeItems, mergeImport
   };
 }));

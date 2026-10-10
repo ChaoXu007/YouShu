@@ -145,6 +145,14 @@ test('fmt / esc: 金额格式化与 HTML 转义', () => {
   assert.equal(core.esc(''), '');
 });
 
+test('fmtPrice: 卡片价格短格式（≥1000 无小数，<1000 两位小数）', () => {
+  assert.equal(core.fmtPrice(12999), '¥12,999');
+  assert.equal(core.fmtPrice(1000), '¥1,000', '边界 1000 恰好无小数');
+  assert.equal(core.fmtPrice(999.5), '¥999.50');
+  assert.equal(core.fmtPrice(0), '¥0.00');
+  assert.equal(core.fmtPrice(128999.99), '¥129,000', '大额四舍五入到整数');
+});
+
 test('activeItems: 过滤已归档物品', () => {
   const items = [
     { id: '1', archived: false },

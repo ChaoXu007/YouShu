@@ -10,7 +10,7 @@ const { MAX_ITEMS, BUILTIN_GROUPS, BUILTIN_CATS, CAT_NAME_TO_ID,
         migrateItems, mergeCats, fixItemCatIds,
         EMOJI, CATS, COMMON_CATS,
         uid, refDate, daysSince, held, daily, loss, remain,
-        isoDate, fmt, esc, lossColor, mergeImport } = YS_CORE;
+        isoDate, fmt, fmtPrice, esc, lossColor, mergeImport } = YS_CORE;
 
 const APP_VERSION = '1.1.0';
 
@@ -144,6 +144,10 @@ function itemCard(it, onclick){
   const h = held(it), d = daily(it), l = loss(it), c = lossColor(l);
   const ico = catEmoji(it.catId);
   const icoHtml = (ico && ico.startsWith('data:')) ? `<img src="${ico}">` : ico;
+  // 副标题（身份区）：购入价（中灰半粗）· 品牌 · 分类；品牌为空时自动省略分隔符
+  const sub = `<span class="sub-price">${fmtPrice(it.price)}</span>`
+            + (it.brand ? ` · ${esc(it.brand)}` : '')
+            + ` · ${esc(catName(it.catId))}`;
   if(isGrid){
     return `<div class="card item" data-id="${it.id}" onclick="${onclick}">
       <div class="item-main">
@@ -152,7 +156,7 @@ function itemCard(it, onclick){
           <span class="item-name">${esc(it.name)}</span>
         </div>
         <div class="daily">${fmt(d)}</div>
-        <div class="item-sub">${esc(it.brand || '')} · ${esc(catName(it.catId))}</div>
+        <div class="item-sub">${sub}</div>
         <div class="mini-prog"><i style="width:${l}%;background:${c}"></i></div>
         <div class="gr-foot">
           <span class="item-loss" style="color:${c}">损耗 ${l}%</span>
@@ -165,7 +169,7 @@ function itemCard(it, onclick){
     <div class="ava">${icoHtml}</div>
     <div class="item-main">
       <div class="item-name">${esc(it.name)}</div>
-      <div class="item-sub">${esc(it.brand || '')} · ${esc(catName(it.catId))}</div>
+      <div class="item-sub">${sub}</div>
       <div class="mini-prog"><i style="width:${l}%;background:${c}"></i></div>
       <div class="item-loss" style="color:${c}">损耗 ${l}%</div>
     </div>
