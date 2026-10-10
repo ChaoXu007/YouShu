@@ -367,5 +367,41 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .preview-box{width:100px;height:100px;margin:0 auto 16px;border-radius:22px;background:#F2F1ED;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);}
 .preview-box img{width:100%;height:100%;object-fit:cover;}
 
-/* ===== 删除迁移弹窗 ===== */
-.mig-select{width:100%;border:1px solid var(--chip-line);border-radius:11px;padding:12px 14px;font-size:15px;background:#fff;color:var(--text);outline:none;margin-bottom:16px;}
+/* ===== UI 优化定稿：资产卡 / 回本目标 / 日均曲线 / 排行榜切换 / 月结条 / 累计资产 ===== */
+
+/* 首页资产卡（深色高级卡片；数字与 hero .big 同风格） */
+.asset-card{background:linear-gradient(135deg,#171717,#2C2C2C);color:#fff;border-radius:20px;padding:20px 20px 16px;margin-bottom:14px;box-shadow:0 10px 26px rgba(20,20,20,.18);}
+.ac-label{font-size:10.5px;letter-spacing:3.5px;opacity:.55;}
+.ac-num{font-size:40px;font-weight:800;letter-spacing:-1.5px;margin-top:7px;line-height:1.1;}
+.ac-num small{font-size:16px;font-weight:400;opacity:.65;letter-spacing:0;margin-left:2px;}
+.ac-row{display:flex;margin-top:17px;padding-top:14px;border-top:1px solid rgba(255,255,255,.13);}
+.ac-cell{flex:1;}
+.ac-cell + .ac-cell{border-left:1px solid rgba(255,255,255,.10);padding-left:14px;}
+.ac-cell .t{font-size:10px;letter-spacing:1.5px;opacity:.5;}
+.ac-cell .v{font-size:16px;font-weight:700;margin-top:5px;letter-spacing:.3px;}
+.ac-cell .v small{font-size:11px;font-weight:400;opacity:.6;}
+
+/* 详情：回本目标行 */
+.goal-line{margin-top:9px;font-size:13.5px;font-weight:700;color:var(--accent);background:#F2F1ED;border-radius:9px;padding:8px 11px;letter-spacing:.3px;}
+
+/* 详情：日均曲线卡 */
+.chart-foot{font-size:11.5px;color:var(--sub);margin-top:9px;line-height:1.7;}
+.chart-verdict{font-size:12.5px;color:#5a5a52;margin-top:7px;letter-spacing:.2px;}
+.chart-verdict b{color:var(--accent);}
+.svg-box{width:100%;display:block;}
+
+/* iOS 风分段切换器（排行榜 / 累计资产 共用） */
+.seg{display:flex;background:#F2F1ED;border-radius:10px;padding:3px;margin-bottom:13px;}
+.seg span{flex:1;text-align:center;font-size:12.5px;padding:6px 0;border-radius:8px;color:#7a7a72;cursor:pointer;letter-spacing:.3px;transition:.15s;}
+.seg span.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+.seg.seg-sm{width:130px;margin:0;flex:0 0 auto;}
+.seg.seg-sm span{font-size:11.5px;padding:4px 0;}
+
+/* 统计：月结条 */
+.month-strip{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;letter-spacing:.3px;}
+.month-strip b{font-size:15px;}
+
+/* 榜单行：名称列加宽 + 数值小注 */
+.rank .nm{width:100px;}
+.rank .pc small{font-weight:400;color:var(--sub);font-size:11px;margin-left:3px;}
+

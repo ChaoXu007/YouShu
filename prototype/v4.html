@@ -163,6 +163,38 @@
   .modal-text{font-size:13.5px;color:#5a5a52;line-height:1.6;margin-bottom:18px;}
   .modal-text b{color:#EF4B4B;}
   .modal-actions{display:flex;gap:10px;}
+  /* 首页资产卡（深色高级卡片；数字字体同 .hero .big，不用衬线） */
+  .asset-card{background:linear-gradient(135deg,#171717,#2C2C2C);color:#fff;border-radius:20px;padding:20px 20px 16px;margin-bottom:14px;box-shadow:0 10px 26px rgba(20,20,20,.18);}
+  .ac-label{font-size:10.5px;letter-spacing:3.5px;opacity:.55;}
+  .ac-num{font-size:40px;font-weight:800;letter-spacing:-1.5px;margin-top:7px;line-height:1.1;}
+  .ac-num small{font-size:16px;font-weight:400;opacity:.65;letter-spacing:0;margin-left:2px;}
+  .ac-row{display:flex;margin-top:17px;padding-top:14px;border-top:1px solid rgba(255,255,255,.13);}
+  .ac-cell{flex:1;}
+  .ac-cell + .ac-cell{border-left:1px solid rgba(255,255,255,.10);padding-left:14px;}
+  .ac-cell .t{font-size:10px;letter-spacing:1.5px;opacity:.5;}
+  .ac-cell .v{font-size:16px;font-weight:700;margin-top:5px;letter-spacing:.3px;}
+  .ac-cell .v small{font-size:11px;font-weight:400;opacity:.6;}
+  /* 详情：回本目标行 + 曲线卡 */
+  .goal-line{margin-top:9px;font-size:13.5px;font-weight:700;color:var(--accent);background:#F2F1ED;border-radius:9px;padding:8px 11px;letter-spacing:.3px;}
+  .chart-foot{font-size:11.5px;color:var(--sub);margin-top:9px;line-height:1.7;}
+  .chart-verdict{font-size:12.5px;color:#5a5a52;margin-top:7px;letter-spacing:.2px;}
+  .chart-verdict b{color:var(--accent);}
+  .svg-box{width:100%;display:block;}
+  .navbar .nav-act{position:absolute;right:16px;font-size:14px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.5px;}
+  /* 分段切换器（排行榜 / 累计资产 共用，iOS 风） */
+  .seg{display:flex;background:#F2F1ED;border-radius:10px;padding:3px;margin-bottom:13px;}
+  .seg span{flex:1;text-align:center;font-size:12.5px;padding:6px 0;border-radius:8px;color:#7a7a72;cursor:pointer;letter-spacing:.3px;transition:.15s;}
+  .seg span.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+  .seg.seg-sm{width:130px;margin:0;flex:0 0 auto;}
+  .seg.seg-sm span{font-size:11.5px;padding:4px 0;}
+  /* 统计：月结条 */
+  .month-strip{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;letter-spacing:.3px;}
+  .month-strip b{font-size:15px;}
+  /* 编辑模式提示条 */
+  .edit-note{font-size:12px;color:var(--sub);background:#F2F1ED;border:1px solid #E2E0D8;border-radius:11px;padding:10px 12px;margin-bottom:14px;line-height:1.6;}
+  /* 榜单行：名称列加宽（品牌名较长）+ 数值小注 */
+  .rank .nm{width:100px;}
+  .rank .pc small{font-weight:400;color:var(--sub);font-size:11px;margin-left:3px;}
   /* v4 紧凑 / 宽松 排版切换 */
   #listWrap.compact .card.item{padding:6px 10px;margin-bottom:5px;}
   #listWrap.compact .ava{width:34px;height:34px;font-size:17px;border-radius:10px;}
@@ -191,6 +223,7 @@
       <div class="scr active" id="scr-list">
         <div class="navbar">物品<span class="view-toggle" id="densityToggle" onclick="toggleDensity()" style="right:52px">⤢</span><span class="view-toggle" id="viewToggle" onclick="toggleView()">▦</span></div>
         <div class="content">
+          <div id="assetWrap"></div>
           <div class="searchrow" id="searchRow">
             <div class="search" onclick="document.getElementById('q').focus()">🔍 搜索物品 / 品牌</div>
             <input id="q" style="display:none" oninput="renderList()" onfocus="searchFocus(true)" onblur="searchFocus(false)">
@@ -203,12 +236,13 @@
         </div>
       </div>
       <div class="scr" id="scr-detail">
-        <div class="navbar"><span class="back" onclick="backFromDetail()">‹</span><span id="detTitle">详情</span></div>
+        <div class="navbar"><span class="back" onclick="backFromDetail()">‹</span><span id="detTitle">详情</span><span class="nav-act" id="detEdit">编辑</span></div>
         <div class="content" id="detWrap"></div>
       </div>
       <div class="scr" id="scr-entry">
-        <div class="navbar"><span class="back" onclick="showScreen('scr-list')">‹</span>添加物品</div>
+        <div class="navbar"><span class="back" onclick="backFromEntry()">‹</span><span id="eTitle">添加物品</span></div>
         <div class="content">
+          <div class="edit-note" id="eEditNote" style="display:none">✏️ 修改「价格 / 购买日期 / 预计使用年限」后，日均价格与回本进度将重新计算。</div>
           <div class="field"><label>名称 *</label><input id="e-name" placeholder="如 iPhone 15 Pro"></div>
           <div class="field"><label>购买价格 *</label><div class="price-in"><span>¥</span><input id="e-price" type="number" placeholder="0.00" oninput="updatePreview()"></div></div>
           <div class="field"><label>购买日期 *</label><input id="e-date" type="date" value="2026-07-09" oninput="updatePreview()"></div>
@@ -224,7 +258,7 @@
             </div>
             <input id="e-life-custom" type="number" placeholder="或自定义年限（年）" style="margin-top:9px;" oninput="customLife()">
           </div>
-          <button class="btn-primary" onclick="saveEntry()">保存</button>
+          <button class="btn-primary" id="eSaveBtn" onclick="saveEntry()">保存</button>
         </div>
       </div>
       <div class="scr" id="scr-stats"><div class="navbar">统计</div><div class="content" id="statsWrap"></div></div>
